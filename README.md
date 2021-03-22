@@ -1,1 +1,5 @@
-# validatingyamlparameter-plugin
+# validating-yaml-parameter-plugin
+
+to install
+
+mvn install
