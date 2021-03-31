@@ -1,7 +1,5 @@
 # validating-yaml-parameter-plugin
 
-to install
-
+mvn verify
 mvn install
-
-Then, find the .hpi and manually install it on your jenkins plugins page.
+mvn hpi:run
