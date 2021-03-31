@@ -30,10 +30,7 @@ THE SOFTWARE.
             <f:textbox />
     </f:entry>
     <f:entry title="${%Default Value}" field="defaultValue">
-            <f:textbox />
-    </f:entry>
-    <f:entry title="${%SyntaxHighlighting}" field="syntaxHighlighting">
-            <f:checkbox />
+            <f:textarea codemirror-mode="yaml" />
     </f:entry>
     <f:entry title="${%Failed Validation Message}" field="failedValidationMessage">
             <f:textbox />

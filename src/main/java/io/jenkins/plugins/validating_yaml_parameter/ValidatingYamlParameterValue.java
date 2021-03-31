@@ -32,7 +32,9 @@ import hudson.model.StringParameterValue;
 import hudson.tasks.BuildWrapper;
 import java.io.IOException;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 /**
  *
@@ -48,18 +50,12 @@ public class ValidatingYamlParameterValue extends StringParameterValue {
         super(name, value);
     }
 
-    public ValidatingYamlParameterValue(String name, String value, boolean syntaxHighlighting) {
+    public ValidatingYamlParameterValue(String name, String value, String failedValidationMessage) {
         super(name, value);
-        this.syntaxHighlighting = syntaxHighlighting;
-    }
-    public ValidatingYamlParameterValue(String name, String value, boolean syntaxHighlighting, String failedValidationMessage) {
-        super(name, value);
-        this.syntaxHighlighting = syntaxHighlighting;
         this.failedValidationMessage = failedValidationMessage;
     }
-    public ValidatingYamlParameterValue(String name, String value, boolean syntaxHighlighting, String failedValidationMessage, String description) {
+    public ValidatingYamlParameterValue(String name, String value, String failedValidationMessage, String description) {
         super(name, value, description);
-        this.syntaxHighlighting = syntaxHighlighting;
         this.failedValidationMessage = failedValidationMessage;
     }
 
@@ -67,24 +63,13 @@ public class ValidatingYamlParameterValue extends StringParameterValue {
         return failedValidationMessage;
     }
 
+    @DataBoundSetter
     public void setFailedValidationMessage(String failedValidationMessage) {
         this.failedValidationMessage = failedValidationMessage;
     }
 
-    public void setSyntaxHighlighting(boolean syntaxHighlighting) {
-        this.syntaxHighlighting = syntaxHighlighting;
-    }
-
-    public boolean getSyntaxHighlighting() {
-        return syntaxHighlighting;
-    }
-
-/*    public String getValue() {
-        return value;
-    }
- */
-    public boolean doCheckYaml(String value) {
-        Yaml yaml = new Yaml();
+    private boolean doCheckYaml(String value) {
+        Yaml yaml = new Yaml(new SafeConstructor());
         try {
             yaml.load(value);
             return true;

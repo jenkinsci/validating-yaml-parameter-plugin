@@ -28,17 +28,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <j:set var="escapeEntryTitleAndDescription" value="false"/>
 
-    <f:entry title="${h.xmlEscape(it.name)}" description="${it.formattedDescription}">
+    <f:entry title="${h.xmlEscape(it.name)}" description="${it.formattedDescription}" >
         <div name="parameter" description="${it.formattedDescription}">
             <input type="hidden" name="name" value="${it.name}" />
-            <j:if test="${!it.syntaxHighlighting}">
-             <f:textarea name="value" value="${it.defaultValue}"
-                    checkUrl="'${rootURL}/descriptorByName/io.jenkins.plugins.validating_yaml_parameter.ValidatingYamlParameterDefinition/validate?value='+encodeURIComponent(this.value)"/>
-            </j:if>
-            <j:if test="${it.syntaxHighlighting}">
             <f:textarea codemirror-mode="yaml" name="value" value="${it.defaultValue}"
-                    checkUrl="'${rootURL}/descriptorByName/io.jenkins.plugins.validating_yaml_parameter.ValidatingYamlParameterDefinition/validate?value='+encodeURIComponent(this.value)"/>
-            </j:if>
+                    checkUrl="'${rootURL}/descriptorByName/io.jenkins.plugins.validating_yaml_parameter.ValidatingYamlParameterDefinition/validate?value='+encodeURIComponent(this.value)" checkMethod="post" />
         </div>
     </f:entry>
 </j:jelly>

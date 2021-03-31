@@ -35,8 +35,10 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 import org.kohsuke.stapler.StaplerRequest;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -55,22 +57,16 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
 
     private static final Logger LOGGER = Logger.getLogger(ValidatingYamlParameterDefinition.class.getName());
     private String defaultValue;
-    private boolean syntaxHighlighting;
     private String failedValidationMessage;
     private static boolean result;
 
     private String value;
 
     @DataBoundConstructor
-    public ValidatingYamlParameterDefinition(String name, String defaultValue, boolean syntaxHighlighting, String failedValidationMessage, String description) {
+    public ValidatingYamlParameterDefinition(String name, String defaultValue, String failedValidationMessage, String description) {
         super(name, description);
         this.defaultValue = defaultValue;
-        this.syntaxHighlighting = syntaxHighlighting;
         this.failedValidationMessage = failedValidationMessage;
-    }
-
-    public boolean getSyntaxHighlighting() {
-        return this.syntaxHighlighting;
     }
 
     public String getDefaultValue() {
@@ -97,14 +93,13 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
 
     @Override
     public ValidatingYamlParameterValue getDefaultParameterValue() {
-    //    LOGGER.info(String.format(getName(), defaultValue, getSyntaxHighlighting()));
-        ValidatingYamlParameterValue v = new ValidatingYamlParameterValue(getName(), defaultValue, getSyntaxHighlighting());
+        ValidatingYamlParameterValue v = new ValidatingYamlParameterValue(getName(), defaultValue);
         return v;
     }
 
     private static ValidationResult doCheckYaml(String value) {
         ValidationResult vres = new ValidationResult();
-        Yaml yaml = new Yaml();
+        Yaml yaml = new Yaml(new SafeConstructor());
         try {
             yaml.load(value);
             vres.setResult(true);
@@ -115,7 +110,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
         return vres;
     }
 
-    @Extension
+    @Extension @Symbol("validatingYamlParameter")
     public static class DescriptorImpl extends ParameterDescriptor {
 
         @Override
@@ -126,6 +121,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
         /**
          *  Check yaml syntax
          */
+        @POST
         public FormValidation doValidate(
                 @QueryParameter("value") final String value,
                 @QueryParameter("failedValidationMessage") final String failedValidationMessage
@@ -153,8 +149,6 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
             throw new Failure("Req: Invalid YAML syntax for parameter [" + getName() + "] specified: " + req_value);
         }
 
-        value.setSyntaxHighlighting(getSyntaxHighlighting());
-
         return value;
     }
 
@@ -169,7 +163,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
             if (!vres.result) {
                 throw new Failure("Req: Invalid value for parameter [" + getName() + "] specified: " + value[0]);
             }
-            return new ValidatingYamlParameterValue(getName(), value[0], getSyntaxHighlighting());
+            return new ValidatingYamlParameterValue(getName(), value[0]);
         }
     }
 
@@ -182,7 +176,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
             if (!vres.result) {
                 throw new AbortException("Invalid value for parameter [" + getName() + "] specified: " + value);
             }
-            return new ValidatingYamlParameterValue(getName(), value, syntaxHighlighting, failedValidationMessage);
+            return new ValidatingYamlParameterValue(getName(), value, failedValidationMessage);
         }
     }
 
@@ -190,7 +184,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
         if (defaultValue instanceof ValidatingYamlParameterValue) {
             ValidatingYamlParameterValue value = (ValidatingYamlParameterValue) defaultValue;
-            return new ValidatingYamlParameterDefinition(getName(), value.value, getSyntaxHighlighting(), getFailedValidationMessage(), getDescription());
+            return new ValidatingYamlParameterDefinition(getName(), value.value, getFailedValidationMessage(), getDescription());
         } else {
             return this;
         }

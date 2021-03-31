@@ -35,7 +35,7 @@ public class ValidatingYamlParameterValueTest {
 
     @Test
     public void equals() {
-        ValidatingYamlParameterValue v = new ValidatingYamlParameterValue("DUMMY", "---\ntest1: value1\n", true);
+        ValidatingYamlParameterValue v = new ValidatingYamlParameterValue("DUMMY", "---\ntest1: value1\n", "error validating yaml");
         assertEquals(v, v);
     }
 }

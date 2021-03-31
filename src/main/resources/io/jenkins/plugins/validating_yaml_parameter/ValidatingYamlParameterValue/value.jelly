@@ -28,12 +28,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <j:set var="escapeEntryTitleAndDescription" value="false"/>
 
-    <f:entry title="${h.xmlEscape(it.name)}" description="${it.formattedDescription}">
-        <j:if test="${!it.syntaxHighlighting}">
-            <f:textarea name="value" value="${it.value}" />
-        </j:if>
-        <j:if test="${it.syntaxHighlighting}">
-            <f:textarea codemirror-mode="yaml" name="value" value="${it.value}" />
-        </j:if>
+    <f:entry title="${h.xmlEscape(it.name)}" description="${it.formattedDescription}" >
+            <f:textarea codemirror-mode="yaml" name="value" value="${it.value}" checkMethod="post" />
     </f:entry>
 </j:jelly>
