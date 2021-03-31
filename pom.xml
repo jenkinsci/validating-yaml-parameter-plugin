@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <groupId>io.jenkins.plugins</groupId>
-    <artifactId>validatingyamlparameter</artifactId>
+    <artifactId>validating-yaml-parameter</artifactId>
     <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
@@ -20,6 +20,15 @@
     </properties>
     <name>ValidatingYamlParameter</name>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+
+    <developers>
+        <developer>
+            <id>cesan3</id>
+            <name>Cesar Sanchez</name>
+            <email>cesan3@gmail.com</email>
+            <timezone>+5</timezone>
+        </developer>
+    </developers>
 
     <dependencyManagement>
         <dependencies>
