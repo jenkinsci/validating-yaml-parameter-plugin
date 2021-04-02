@@ -27,12 +27,15 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.model.Failure;
+import hudson.model.Item;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
+import hudson.security.Permission;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
@@ -124,8 +127,14 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
         @POST
         public FormValidation doValidate(
                 @QueryParameter("value") final String value,
-                @QueryParameter("failedValidationMessage") final String failedValidationMessage
+                @QueryParameter("failedValidationMessage") final String failedValidationMessage,
+                @AncestorInPath Item item
                 ) {
+
+            if (item == null) {
+                return FormValidation.ok();
+            }
+            item.checkPermission(Permission.CONFIGURE);
 
             ValidationResult vres = doCheckYaml(value);
             if(vres.result) {
