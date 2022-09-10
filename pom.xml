@@ -9,7 +9,7 @@
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>validating-yaml-parameter</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
     <packaging>hpi</packaging>
     <properties>
         <revision>1.4</revision>
