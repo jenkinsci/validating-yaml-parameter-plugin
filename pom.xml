@@ -9,14 +9,14 @@
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>validating-yaml-parameter</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
         <revision>1.4</revision>
         <changelist>-SNAPSHOT</changelist>
+        <gitHubRepo>jenkinsci/validating-yaml-parameter-plugin</gitHubRepo>
         <jenkins.version>2.346.1</jenkins.version>
         <java.level>8</java.level>
-        <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     </properties>
     <name>ValidatingYamlParameter</name>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
