@@ -1,1 +1,3 @@
 _extends: .github
+name-template: $NEXT_MINOR_VERSION
+tag-template: validating-yaml-parameter-$NEXT_MINOR_VERSION
