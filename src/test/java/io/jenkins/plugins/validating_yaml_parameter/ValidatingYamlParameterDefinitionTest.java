@@ -23,7 +23,6 @@
  */
 package io.jenkins.plugins.validating_yaml_parameter;
 
-import hudson.AbortException;
 import hudson.cli.CLICommand;
 import hudson.model.Failure;
 import net.sf.json.JSONObject;
@@ -32,9 +31,7 @@ import org.junit.runner.RunWith;
 import org.kohsuke.stapler.StaplerRequest;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import java.io.IOException;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 /**
