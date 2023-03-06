@@ -42,6 +42,7 @@ import org.kohsuke.stapler.verb.POST;
 import org.kohsuke.stapler.StaplerRequest;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.LoaderOptions;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -102,7 +103,9 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
 
     private static ValidationResult doCheckYaml(String value) {
         ValidationResult vres = new ValidationResult();
-        Yaml yaml = new Yaml(new SafeConstructor());
+        LoaderOptions options = new LoaderOptions();
+        SafeConstructor constructor = new SafeConstructor(options);
+        Yaml yaml = new Yaml(constructor);
         try {
             yaml.load(value);
             vres.setResult(true);

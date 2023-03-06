@@ -35,6 +35,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.LoaderOptions;
 
 /**
  *
@@ -69,7 +70,9 @@ public class ValidatingYamlParameterValue extends StringParameterValue {
     }
 
     private boolean doCheckYaml(String value) {
-        Yaml yaml = new Yaml(new SafeConstructor());
+        LoaderOptions options = new LoaderOptions();
+        SafeConstructor constructor = new SafeConstructor(options);
+        Yaml yaml = new Yaml(constructor);
         try {
             yaml.load(value);
             return true;
