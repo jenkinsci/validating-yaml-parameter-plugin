@@ -140,12 +140,12 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
             item.checkPermission(Permission.CONFIGURE);
 
             ValidationResult vres = doCheckYaml(value);
-            if(vres.result) {
+            if(vres.getResult()) {
                 return FormValidation.ok();
             }
             else {
                 return failedValidationMessage == null || "".equals(failedValidationMessage)
-                        ? FormValidation.error("Invalid yaml string: " + vres.error)
+                        ? FormValidation.error("Invalid yaml string: " + vres.getError())
                         : FormValidation.error(failedValidationMessage);
             }
         }
@@ -157,7 +157,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
         String req_value = value.getValue();
         ValidationResult vres = doCheckYaml(req_value);
 
-        if (!vres.result) {
+        if (!vres.getResult()) {
             throw new Failure("Req: Invalid YAML syntax for parameter [" + getName() + "] specified: " + req_value);
         }
 
@@ -172,7 +172,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
             return getDefaultParameterValue();
         } else {
             ValidationResult vres = doCheckYaml(value[0]);
-            if (!vres.result) {
+            if (!vres.getResult()) {
                 throw new Failure("Req: Invalid value for parameter [" + getName() + "] specified: " + value[0]);
             }
             return new ValidatingYamlParameterValue(getName(), value[0]);
@@ -185,7 +185,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
             return getDefaultParameterValue();
         } else {
             ValidationResult vres = doCheckYaml(value);
-            if (!vres.result) {
+            if (!vres.getResult()) {
                 throw new AbortException("Invalid value for parameter [" + getName() + "] specified: " + value);
             }
             return new ValidatingYamlParameterValue(getName(), value, failedValidationMessage);
