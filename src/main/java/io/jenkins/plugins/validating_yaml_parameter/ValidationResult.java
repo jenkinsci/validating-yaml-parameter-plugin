@@ -28,14 +28,22 @@ package io.jenkins.plugins.validating_yaml_parameter;
  * @author csanchez
  */
 public class ValidationResult {
-    public boolean result;
-    public String error;
+    private boolean result;
+    private String error;
 
     public ValidationResult() {
     }
 
     public void setResult(boolean result) {
         this.result = result;
+    }
+
+    public boolean getResult() {
+	return this.result;
+    }
+
+    public String getError() {
+	return this.error;
     }
 
     public void setError(String error) {
