@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
             <artifactId>rebuild</artifactId>
-            <version>332.va_1ee476d8f6d</version>
+            <version>338.va_0a_b_50e29397</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
