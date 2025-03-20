@@ -28,7 +28,7 @@ import hudson.model.Failure;
 import net.sf.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ValidatingYamlParameterDefinitionTest {
 
     @Mock
-    private StaplerRequest req;
+    private StaplerRequest2 req;
 
     @Mock
     private CLICommand cliCommand;
@@ -68,8 +68,7 @@ class ValidatingYamlParameterDefinitionTest {
     void failedCreateValueStapler() {
         ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition("DUMMY", "---\nkey1: value1: value2", "yaml syntax error", "description");
         Mockito.when(req.getParameterValues("DUMMY")).thenReturn(new String[]{"---\nkey1: value1: value2\n"});
-        assertThrows(Failure.class, () ->
-            d.createValue(req));
+        assertThrows(Failure.class, () -> d.createValue(req));
     }
 
     @Test
