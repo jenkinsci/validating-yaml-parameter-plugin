@@ -27,7 +27,6 @@ import hudson.AbortException;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.ParameterValue;
 import hudson.model.StringParameterValue;
 import hudson.tasks.BuildWrapper;
 import java.io.IOException;

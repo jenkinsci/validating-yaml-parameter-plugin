@@ -32,22 +32,19 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.security.Permission;
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.LoaderOptions;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import java.util.Map;
+import java.io.Serial;
 import java.util.logging.Logger;
 
 /**
@@ -55,8 +52,9 @@ import java.util.logging.Logger;
  * @author csanchez
  */
 
-public class ValidatingYamlParameterDefinition extends ParameterDefinition{
+public class ValidatingYamlParameterDefinition extends ParameterDefinition {
 
+    @Serial
     private static final long serialVersionUID = 900032072543915L;
 
     private static final Logger LOGGER = Logger.getLogger(ValidatingYamlParameterDefinition.class.getName());
@@ -68,7 +66,8 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
 
     @DataBoundConstructor
     public ValidatingYamlParameterDefinition(String name, String defaultValue, String failedValidationMessage, String description) {
-        super(name, description);
+        super(name);
+        setDescription(description);
         this.defaultValue = defaultValue;
         this.failedValidationMessage = failedValidationMessage;
     }
@@ -144,7 +143,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
                 return FormValidation.ok();
             }
             else {
-                return failedValidationMessage == null || "".equals(failedValidationMessage)
+                return failedValidationMessage == null || failedValidationMessage.isEmpty()
                         ? FormValidation.error("Invalid yaml string: " + vres.getError())
                         : FormValidation.error(failedValidationMessage);
             }
@@ -152,7 +151,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+    public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         ValidatingYamlParameterValue value = req.bindJSON(ValidatingYamlParameterValue.class, jo);
         String req_value = value.getValue();
         ValidationResult vres = doCheckYaml(req_value);
@@ -165,7 +164,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest req) {
+    public ParameterValue createValue(StaplerRequest2 req) {
         String[] value = req.getParameterValues(getName());
 
         if (value == null || value.length < 1) {
@@ -181,7 +180,7 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
 
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
-        if (value == null || value.length() == 0) {
+        if (value == null || value.isEmpty()) {
             return getDefaultParameterValue();
         } else {
             ValidationResult vres = doCheckYaml(value);
@@ -194,9 +193,8 @@ public class ValidatingYamlParameterDefinition extends ParameterDefinition{
 
     @Override
     public ParameterDefinition copyWithDefaultValue(ParameterValue defaultValue) {
-        if (defaultValue instanceof ValidatingYamlParameterValue) {
-            ValidatingYamlParameterValue value = (ValidatingYamlParameterValue) defaultValue;
-            return new ValidatingYamlParameterDefinition(getName(), value.value, getFailedValidationMessage(), getDescription());
+        if (defaultValue instanceof ValidatingYamlParameterValue value) {
+	        return new ValidatingYamlParameterDefinition(getName(), value.value, getFailedValidationMessage(), getDescription());
         } else {
             return this;
         }
