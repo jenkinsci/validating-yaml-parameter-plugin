@@ -23,18 +23,18 @@
  */
 package io.jenkins.plugins.validating_yaml_parameter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  * @author csanchez
  */
-public class ValidatingYamlParameterValueTest {
+class ValidatingYamlParameterValueTest {
 
     @Test
-    public void equals() {
+    void equals() {
         ValidatingYamlParameterValue v = new ValidatingYamlParameterValue("DUMMY", "---\ntest1: value1\n", "error validating yaml");
         assertEquals(v, v);
     }

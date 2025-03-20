@@ -26,20 +26,22 @@ package io.jenkins.plugins.validating_yaml_parameter;
 import hudson.cli.CLICommand;
 import hudson.model.Failure;
 import net.sf.json.JSONObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.stapler.StaplerRequest;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  *
  * @author csanchez
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ValidatingYamlParameterDefinitionTest {
+@ExtendWith(MockitoExtension.class)
+class ValidatingYamlParameterDefinitionTest {
 
     @Mock
     private StaplerRequest req;
@@ -48,7 +50,7 @@ public class ValidatingYamlParameterDefinitionTest {
     private CLICommand cliCommand;
 
     @Test
-    public void simpleConfiguration() throws Exception {
+    void simpleConfiguration() {
         ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition("DUMMY", "---\nkey1: value1\nkey2: value2\n", "msg", "yaml validation");
         assertEquals("DUMMY", d.getName());
         assertEquals("---\nkey1: value1\nkey2: value2\n", d.getDefaultValue());
@@ -62,20 +64,21 @@ public class ValidatingYamlParameterDefinitionTest {
         assertEquals(v, d.createValue(req, jo));
     }
 
-    @Test(expected = Failure.class)
-    public void failedCreateValueStapler() {
+    @Test
+    void failedCreateValueStapler() {
         ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition("DUMMY", "---\nkey1: value1: value2", "yaml syntax error", "description");
         Mockito.when(req.getParameterValues("DUMMY")).thenReturn(new String[]{"---\nkey1: value1: value2\n"});
-        d.createValue(req);
+        assertThrows(Failure.class, () ->
+            d.createValue(req));
     }
 
-    @Test(expected = Failure.class)
-    public void failedCreateValueJSONObject() {
+    @Test
+    void failedCreateValueJSONObject() {
         ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition("DUMMY", "---\nkey1: value1: value2\n", "yaml syntax error", "Description");
         ValidatingYamlParameterValue v = new ValidatingYamlParameterValue("DUMMY", "---\nkey1: value1: value2");
         JSONObject jo = new JSONObject();
         Mockito.when(req.bindJSON(ValidatingYamlParameterValue.class, jo)).thenReturn(v);
-        d.createValue(req, jo);
+        assertThrows(Failure.class, () -> d.createValue(req, jo));
     }
 
 }
