@@ -23,8 +23,12 @@
  */
 package io.jenkins.plugins.validating_yaml_parameter;
 
+import hudson.AbortException;
 import hudson.cli.CLICommand;
 import hudson.model.Failure;
+import hudson.model.Item;
+import hudson.model.StringParameterValue;
+import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,8 +37,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 /**
  *
@@ -80,4 +85,225 @@ class ValidatingYamlParameterDefinitionTest {
         assertThrows(Failure.class, () -> d.createValue(req, jo));
     }
 
+    @Test
+    void testGetDefaultParameterValue() {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        ValidatingYamlParameterValue v = d.getDefaultParameterValue();
+        assertEquals("DUMMY", v.getName());
+        assertEquals("default: value", v.getValue());
+    }
+
+    @Test
+    void testCreateValueWithNullCLICommand() throws IOException, InterruptedException {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(cliCommand, null);
+        assertEquals(d.getDefaultParameterValue().getValue(), v.getValue());
+    }
+
+    @Test
+    void testCreateValueWithEmptyCLICommand() throws IOException, InterruptedException {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(cliCommand, "");
+        assertEquals(d.getDefaultParameterValue().getValue(), v.getValue());
+    }
+
+    @Test
+    void testCreateValueWithValidCLICommand() throws IOException, InterruptedException {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        String yaml = "key: value";
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(cliCommand, yaml);
+        assertEquals(yaml, v.getValue());
+    }
+
+    @Test
+    void testCreateValueWithInvalidCLICommand() {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        String invalidYaml = "key: : value";
+        assertThrows(AbortException.class, () -> 
+            d.createValue(cliCommand, invalidYaml)
+        );
+    }
+
+    @Test
+    void testCopyWithDefaultValue() {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        ValidatingYamlParameterValue v = new ValidatingYamlParameterValue("DUMMY", "new: value");
+        ValidatingYamlParameterDefinition copied = (ValidatingYamlParameterDefinition) d.copyWithDefaultValue(v);
+
+        assertEquals(d.getName(), copied.getName());
+        assertEquals("new: value", copied.getDefaultValue());
+        assertEquals(d.getFailedValidationMessage(), copied.getFailedValidationMessage());
+        assertEquals(d.getDescription(), copied.getDescription());
+    }
+
+    @Test
+    void testCopyWithNonMatchingDefaultValue() {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        StringParameterValue v = new StringParameterValue("DUMMY", "new value");
+        ValidatingYamlParameterDefinition copied = (ValidatingYamlParameterDefinition) d.copyWithDefaultValue(v);
+
+        assertSame(d, copied);
+    }
+
+    @Test
+    void testDescriptorDisplayName() {
+        ValidatingYamlParameterDefinition.DescriptorImpl descriptor = new ValidatingYamlParameterDefinition.DescriptorImpl();
+        assertEquals("Validating Yaml Parameter", descriptor.getDisplayName());
+    }
+
+    @Test
+    void testDescriptorValidateWithNullItem() {
+        ValidatingYamlParameterDefinition.DescriptorImpl descriptor = new ValidatingYamlParameterDefinition.DescriptorImpl();
+        FormValidation validation = descriptor.doValidate("key: value", "error", null);
+        assertEquals(FormValidation.Kind.OK, validation.kind);
+    }
+
+    @Test
+    void testDescriptorValidateWithValidYaml() {
+        ValidatingYamlParameterDefinition.DescriptorImpl descriptor = new ValidatingYamlParameterDefinition.DescriptorImpl();
+        Item item = mock(Item.class);
+        FormValidation validation = descriptor.doValidate("key: value", "error", item);
+        assertEquals(FormValidation.Kind.OK, validation.kind);
+    }
+
+    @Test
+    void testDescriptorValidateWithInvalidYaml() {
+        ValidatingYamlParameterDefinition.DescriptorImpl descriptor = new ValidatingYamlParameterDefinition.DescriptorImpl();
+        Item item = mock(Item.class);
+        FormValidation validation = descriptor.doValidate("key: : value", "Custom error", item);
+        assertEquals(FormValidation.Kind.ERROR, validation.kind);
+        assertEquals("Custom error", validation.getMessage());
+    }
+
+    @Test
+    void testDescriptorValidateWithInvalidYamlNoCustomMessage() {
+        ValidatingYamlParameterDefinition.DescriptorImpl descriptor = new ValidatingYamlParameterDefinition.DescriptorImpl();
+        Item item = mock(Item.class);
+        FormValidation validation = descriptor.doValidate("key: : value", "", item);
+        assertEquals(FormValidation.Kind.ERROR, validation.kind);
+        assertTrue(validation.getMessage().startsWith("Invalid yaml string:"));
+    }
+
+    @Test
+    void testCreateValueWithNullParameterValues() {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        Mockito.when(req.getParameterValues("DUMMY")).thenReturn(null);
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(req);
+        assertEquals(d.getDefaultParameterValue().getValue(), v.getValue());
+    }
+
+    @Test
+    void testCreateValueWithEmptyParameterValues() {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        Mockito.when(req.getParameterValues("DUMMY")).thenReturn(new String[0]);
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(req);
+        assertEquals(d.getDefaultParameterValue().getValue(), v.getValue());
+    }
+
+    @Test
+    void testDescriptorValidateWithNullValue() {
+        ValidatingYamlParameterDefinition.DescriptorImpl descriptor = new ValidatingYamlParameterDefinition.DescriptorImpl();
+        Item item = mock(Item.class);
+        FormValidation validation = descriptor.doValidate(null, "error", item);
+        assertEquals(FormValidation.Kind.ERROR, validation.kind);
+    }
+
+    @Test
+    void testGetValue() {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        assertEquals("default: value", d.getValue());
+    }
+
+    @Test
+    void testDescriptorValidateWithComplexYaml() {
+        ValidatingYamlParameterDefinition.DescriptorImpl descriptor = new ValidatingYamlParameterDefinition.DescriptorImpl();
+        Item item = mock(Item.class);
+        String complexYaml = "---\n" +
+                           "key1: value1\n" +
+                           "key2:\n" +
+                           "  nested: value2\n" +
+                           "  array:\n" +
+                           "    - item1\n" +
+                           "    - item2\n";
+        FormValidation validation = descriptor.doValidate(complexYaml, "error", item);
+        assertEquals(FormValidation.Kind.OK, validation.kind);
+    }
+
+    @Test
+    void testDescriptorValidateWithInvalidComplexYaml() {
+        ValidatingYamlParameterDefinition.DescriptorImpl descriptor = new ValidatingYamlParameterDefinition.DescriptorImpl();
+        Item item = mock(Item.class);
+        String invalidComplexYaml = "---\n" +
+                                  "key1: value1\n" +
+                                  "key2:\n" +
+                                  "  nested: value2\n" +
+                                  "  array:\n" +
+                                  "    - item1\n" +
+                                  "    - item2\n" +
+                                  "  invalid: : value\n";
+        FormValidation validation = descriptor.doValidate(invalidComplexYaml, "Custom error", item);
+        assertEquals(FormValidation.Kind.ERROR, validation.kind);
+        assertEquals("Custom error", validation.getMessage());
+    }
+
+    @Test
+    void testCreateValueWithSpecialCharacters() throws IOException, InterruptedException {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        String yamlWithSpecialChars = "key: 'value with special chars: !@#$%^&*()'";
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(cliCommand, yamlWithSpecialChars);
+        assertEquals(yamlWithSpecialChars, v.getValue());
+    }
+
+    @Test
+    void testCreateValueWithUnicodeCharacters() throws IOException, InterruptedException {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        String yamlWithUnicode = "key: 'value with unicode: 你好世界'";
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(cliCommand, yamlWithUnicode);
+        assertEquals(yamlWithUnicode, v.getValue());
+    }
+
+    @Test
+    void testCreateValueWithComments() throws IOException, InterruptedException {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+        String yamlWithComments = "# This is a comment\nkey: value # Inline comment";
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(cliCommand, yamlWithComments);
+        assertEquals(yamlWithComments, v.getValue());
+    }
+
+    @Test
+    void testCreateValueWithEmptyOrNullInput() throws IOException, InterruptedException {
+        ValidatingYamlParameterDefinition d = new ValidatingYamlParameterDefinition(
+            "DUMMY", "default: value", "error", "description");
+
+        // Test null CLI command
+        ValidatingYamlParameterValue v = (ValidatingYamlParameterValue) d.createValue(cliCommand, null);
+        assertEquals(d.getDefaultParameterValue().getValue(), v.getValue());
+
+        // Test empty CLI command
+        v = (ValidatingYamlParameterValue) d.createValue(cliCommand, "");
+        assertEquals(d.getDefaultParameterValue().getValue(), v.getValue());
+
+        // Test null parameter values
+        Mockito.when(req.getParameterValues("DUMMY")).thenReturn(null);
+        v = (ValidatingYamlParameterValue) d.createValue(req);
+        assertEquals(d.getDefaultParameterValue().getValue(), v.getValue());
+
+        // Test empty parameter values
+        Mockito.when(req.getParameterValues("DUMMY")).thenReturn(new String[0]);
+        v = (ValidatingYamlParameterValue) d.createValue(req);
+        assertEquals(d.getDefaultParameterValue().getValue(), v.getValue());
+    }
 }
