@@ -42,7 +42,6 @@ import org.yaml.snakeyaml.LoaderOptions;
  */
 public class ValidatingYamlParameterValue extends StringParameterValue {
 
-    private boolean syntaxHighlighting;
     private String failedValidationMessage;
 
     @DataBoundConstructor
